@@ -180,6 +180,13 @@ public enum ComparisonType
     LESS_EQUAL
 }
 
+public enum EaseType
+{
+    EaseInOut,
+    EaseOut,
+    EaseIn,
+    Linear
+}
 
 public static class ExtensionsFloat
 {
@@ -332,6 +339,29 @@ public static class ExtensionsFloat
             return string.Format (CultureInfo.InvariantCulture, "{0:D2}:{1:D2}:{2:D2}", hours, mins, secs);
         else
             return string.Format (CultureInfo.InvariantCulture, "{0:D2}:{1:D2}", hours, mins);
+    }
+
+    public static float EaseFromTo(this float value, float start, float end, EaseType type = EaseType.EaseInOut)
+    {
+        switch (type)
+        {
+            case EaseType.EaseInOut:
+                return Mathf.Lerp(start, end, value * value * (3.0f - 2.0f * value));
+
+            case EaseType.EaseOut:
+                return Mathf.Lerp(start, end, Mathf.Sin(value * Mathf.PI * 0.5f));
+
+            case EaseType.EaseIn:
+                return Mathf.Lerp(start, end, 1.0f - Mathf.Cos(value * Mathf.PI * 0.5f));
+
+            default:
+                return Mathf.Lerp(start, end, value);
+        }
+    }
+
+    public static float Remap(this float value, float from1, float to1, float from2, float to2)
+    {
+        return Mathf.Clamp((value - from1) / (to1 - from1) * (to2 - from2) + from2, from2, to2);
     }
 }
 
