@@ -30,11 +30,11 @@ namespace ModU3DToolkit.TransitionFX
         {
             get
             {
-                if (Equals(_instance, null))
+                if (_instance == null)
                 {
                     _instance = Camera.main.GetComponent<CameraTransitionsFX>();
 
-                    if (Equals(_instance, null))
+                    if (_instance == null)
                         throw new UnityException("Main Camera does not have a TransitionFX extension.");
                 }
 
