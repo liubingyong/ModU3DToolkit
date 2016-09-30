@@ -48,10 +48,11 @@ public class GhostTrail : MonoBehaviour {
     private int spacingCounter = 0;
     private List<Vector3> ghostPositions = new List<Vector3>();
     private List<GameObject> ghostList = new List<GameObject>();
-    private bool hasRigidBody;
+    //private bool hasRigidBody;
     
     private float alpha;
     private bool killSwitch;
+    private Vector3 lastFramePosition;
 
     #endregion
 
@@ -80,7 +81,7 @@ public class GhostTrail : MonoBehaviour {
         if (spacing < 0)
             spacing = 0;
 
-        hasRigidBody = this.gameObject.GetComponent<Rigidbody>() != null ? true : false;
+        //hasRigidBody = this.gameObject.GetComponent<Rigidbody>() != null ? true : false;
 
         ghostMaterial.Reverse();
     }
@@ -150,6 +151,8 @@ public class GhostTrail : MonoBehaviour {
             renderer.material.SetColor("_Color", color);
         }
         spacingCounter = 0;
+
+        lastFramePosition = this.transform.position;
     }
 
     #region public methods
@@ -200,8 +203,9 @@ public class GhostTrail : MonoBehaviour {
     private void Populate(Vector3 position, bool allowPositionOverride)
     {
         if (renderOnMotion
-           && hasRigidBody
-           && gameObject.GetComponent<Rigidbody>().velocity == Vector3.zero
+           //&& hasRigidBody
+           //&& gameObject.GetComponent<Rigidbody>().velocity == Vector3.zero
+           && this.transform.position == lastFramePosition
            && !allowPositionOverride)
         {
             if (ghostList.Count > 0)
