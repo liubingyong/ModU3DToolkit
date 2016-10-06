@@ -49,7 +49,7 @@ public class LightProbesTool : EditorWindow
     protected float capsuleHeight;
     protected float castDistance;
 
-    [MenuItem("SBS/Light Probes Tool")]
+    [MenuItem("ModU3DToolkit/Light Probes Tool")]
     static void Init()
     {
         EditorWindow.GetWindow<LightProbesTool>("Light Probes Tool", true);

@@ -12,7 +12,7 @@ public class CopyComponentData : ScriptableWizard
     #endregion
 
     #region Wizard callback
-    [MenuItem("SBS/Copy Component Data")]
+    [MenuItem("ModU3DToolkit/Copy Component Data")]
     static void CreateWizard()
     {
         ScriptableWizard.DisplayWizard("Copy Component Data", typeof(CopyComponentData), "OK");

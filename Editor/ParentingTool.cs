@@ -7,7 +7,7 @@ public class ParentingTool : EditorWindow
 {
     static readonly Vector3 worldOrigin = Vector3.zero;
 
-    [MenuItem("SBS/ParentingTool/Parent Center %g")]
+    [MenuItem("ModU3DToolkit/ParentingTool/Parent Center %g")]
     public static void ParentCenter()
     {
         if (NoObjectsAreSelected())
@@ -17,7 +17,7 @@ public class ParentingTool : EditorWindow
         ParentSelectionToGameObjectInPosition(parent, GetSelectionBoundCenterPoint());
     }
 
-    [MenuItem("SBS/ParentingTool/Parent First %#g")]
+    [MenuItem("ModU3DToolkit/ParentingTool/Parent First %#g")]
     public static void ParentFirst()
     {
         if (NoObjectsAreSelected())
@@ -27,7 +27,7 @@ public class ParentingTool : EditorWindow
         ParentSelectionToGameObjectInPosition(parent, Selection.activeGameObject.transform.position);
     }
 
-    [MenuItem("SBS/ParentingTool/Parent Origin %&g")]
+    [MenuItem("ModU3DToolkit/ParentingTool/Parent Origin %&g")]
     public static void ParentOrigin()
     {
         if (NoObjectsAreSelected())
