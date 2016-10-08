@@ -85,11 +85,12 @@ public class BMFontEditor : EditorWindow
             info.uv.y = 1 - (float)bmInfo.y / (float)bmFont.texHeight;
             info.uv.width = (float)bmInfo.width / (float)bmFont.texWidth;
             info.uv.height = -1f * (float)bmInfo.height / (float)bmFont.texHeight;
-            info.vert.x = 0;
-            info.vert.y = -(float)bmInfo.height;
-            info.vert.width = (float)bmInfo.width;
-            info.vert.height = (float)bmInfo.height;
-            info.width = (float)bmInfo.advance;
+            info.minX = 0;
+            info.minY = 0;
+            info.maxX = bmInfo.width;
+            info.maxY = -bmInfo.height;
+            info.advance = bmInfo.advance;
+
             characterInfo[i] = info;
         }
         targetFont.characterInfo = characterInfo;

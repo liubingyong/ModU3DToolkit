@@ -69,7 +69,7 @@ public class GhostTrail : MonoBehaviour {
         if (ghostMaterial.Count == 0)
             ghostMaterial.Add(targetRenderer.sharedMaterial);
 
-        Vector3 position = gameObject.transform.position + trailOffset;
+        //Vector3 position = gameObject.transform.position + trailOffset;
 
         //for (int i = 0; i < trailSize; i++)
         //    Populate(position, true);

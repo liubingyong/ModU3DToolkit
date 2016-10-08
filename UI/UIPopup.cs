@@ -9,7 +9,7 @@ public class UIPopup : IntrusiveListNode<UIPopup>
     public Signal onHide = Signal.Create<UIPopup>();
     public Signal onRemoveFromStack = Signal.Create<UIPopup>();
     public bool showOnAwake = false;
-    public bool pausesGame = true;
+    public bool pausesGame = false;
 
     protected bool awakeGuard = false;
 

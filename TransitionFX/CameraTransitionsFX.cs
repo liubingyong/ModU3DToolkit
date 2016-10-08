@@ -274,5 +274,17 @@ namespace ModU3DToolkit.TransitionFX
             if(endValue == 0)
                 _blit.enabled = false;
         }
+
+        public static void Play(Action action)
+        {
+            Instance.OnTransitionExitEnded = () =>
+            {
+                action.Invoke();
+                Instance.TransitionEnter();
+
+                Instance.OnTransitionExitEnded = null;
+            };
+            Instance.TransitionExit();
+        }
     }
 }

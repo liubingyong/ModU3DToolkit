@@ -7,6 +7,7 @@ using System.Collections;
 using System.Collections.Generic;
 using ModU3DToolkit.Core;
 using ModU3DToolkit.Pool;
+using UnityEngine.SceneManagement;
 
 [AddComponentMenu("UI/UIManager")]
 public class UIManager : Manager<UIManager>
@@ -42,11 +43,11 @@ public class UIManager : Manager<UIManager>
     protected IntrusiveList<UIPopup> popups = new IntrusiveList<UIPopup>();
 
     protected Stack<UIPopup> popupsStack = new Stack<UIPopup>();
-/*
-    protected uint nextFlyerID = 0;
-    protected Dictionary<string, uint> flyerIDs = new Dictionary<string,uint>();
-    protected Dictionary<uint, Pool<UIFlyer>> flyerPools = new Dictionary<uint,Pool<UIFlyer>>();
-*/
+    /*
+        protected uint nextFlyerID = 0;
+        protected Dictionary<string, uint> flyerIDs = new Dictionary<string,uint>();
+        protected Dictionary<uint, Pool<UIFlyer>> flyerPools = new Dictionary<uint,Pool<UIFlyer>>();
+    */
     protected PoolCollection<UIFlyer> flyers;
 
     protected Camera uiCamera = null;
@@ -94,7 +95,7 @@ public class UIManager : Manager<UIManager>
             return prevPage != null ? prevPage.name : string.Empty;
         }
     }
-    
+
     public void AddPage(UIPage page)
     {
         pages.Add(page);
@@ -237,13 +238,13 @@ public class UIManager : Manager<UIManager>
 
         popupsStack.Push(popup);
 
-       if (popup.pausesGame)
+        if (popup.pausesGame)
             TimeManager.Instance.MasterSource.Pause();
 
         popup.gameObject.SetActive(true);
     }
 
-    public void PushPopup(string name, bool deactivatePrevious=true)
+    public void PushPopup(string name, bool deactivatePrevious = true)
     {
         foreach (UIPopup popup in popups)
         {
@@ -293,7 +294,7 @@ public class UIManager : Manager<UIManager>
             popup.gameObject.SetActive(false);
             popupsStack.Pop();
 
-           if (popup.pausesGame)
+            if (popup.pausesGame)
                 TimeManager.Instance.MasterSource.Resume();
             popup.onRemoveFromStack.Invoke(popup);
 
@@ -651,14 +652,16 @@ public class UIManager : Manager<UIManager>
     new void Awake()
     {
         base.Awake();
-        
+
+        SceneManager.sceneLoaded += SceneLoaded;
+
         flyers.Initialize();
 
         if (dontDestroyOnLoad)
             GameObject.DontDestroyOnLoad(gameObject);
     }
 
-    void Start()
+    new void Start()
     {
 #if UNITY_EDITOR
         gotoPageGuard = false;
@@ -696,11 +699,22 @@ public class UIManager : Manager<UIManager>
         if (Application.isPlaying)
 #endif
         {
-           
+
         }
     }
 
-    void OnLevelWasLoaded(int level)
+    //void OnLevelWasLoaded(int level)
+    //{
+    //    if (disableUnityMouseEvents)
+    //    {
+    //        foreach (Camera cam in Camera.allCameras)
+    //            cam.eventMask = 0;
+    //    }
+    //    else
+    //        uiCamera.eventMask = 0;
+    //}
+
+    void SceneLoaded(Scene arg0, LoadSceneMode arg1)
     {
         if (disableUnityMouseEvents)
         {
