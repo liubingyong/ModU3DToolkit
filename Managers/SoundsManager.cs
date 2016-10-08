@@ -89,7 +89,7 @@ public class SoundsManager : MonoBehaviour
 
         IEnumerable<AudioSource> sources = null;
 
-        Transform[] transforms = (Transform[])Transform.FindSceneObjectsOfType(typeof(Transform));
+        Transform[] transforms = Transform.FindObjectsOfType<Transform>();
 
         List<AudioSource> sourceList = new List<AudioSource>();
         sources = sourceList;
@@ -125,7 +125,7 @@ public class SoundsManager : MonoBehaviour
 
         IEnumerable<AudioSource> sources = null;
 
-        Transform[] transforms = (Transform[])Transform.FindSceneObjectsOfType(typeof(Transform));
+        Transform[] transforms = Transform.FindObjectsOfType<Transform>();
 
         List<AudioSource> sourceList = new List<AudioSource>();
         sources = sourceList;
@@ -181,7 +181,7 @@ public class SoundsManager : MonoBehaviour
 
         IEnumerable<AudioSource> sources = null;
 
-        Transform[] transforms = (Transform[])Transform.FindSceneObjectsOfType(typeof(Transform));
+        Transform[] transforms = Transform.FindObjectsOfType<Transform>();
 
         List<AudioSource> sourceList = new List<AudioSource>();
         sources = sourceList;
@@ -317,10 +317,10 @@ public class SoundsManager : MonoBehaviour
 
     void OnApplicationPause(bool paused)
     {
-        bool bValue = !paused && TimeManager.Instance.MasterSource.IsPaused;
+        //bool bValue = !paused && TimeManager.Instance.MasterSource.IsPaused;
 
-        if (useAlternativeBehavior)
-            bValue = paused || TimeManager.Instance.MasterSource.IsPaused;
+        //if (useAlternativeBehavior)
+        //    bValue = paused || TimeManager.Instance.MasterSource.IsPaused;
 
         if (useAlternativeBehavior)
         {
