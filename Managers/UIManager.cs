@@ -50,7 +50,6 @@ public class UIManager : Manager<UIManager>
     */
     protected PoolCollection<UIFlyer> flyers;
 
-    protected Camera uiCamera = null;
     protected TimeSource uiTimeSource = null;
     protected UIPage prevPage = null;
     protected UIPage activePage = null;
@@ -540,94 +539,6 @@ public class UIManager : Manager<UIManager>
     }
     #endregion
 
-    #region Camera
-    public Camera UICamera
-    {
-        get
-        {
-            return uiCamera;
-        }
-    }
-
-    protected void CreateCamera()
-    {
-        GameObject camGO = GameObject.Find("uiCamera_" + name);
-        if (camGO != null)
-            uiCamera = camGO.GetComponent<Camera>();
-        if (null == uiCamera)
-        {
-            GameObject go = new GameObject("uiCamera_" + name);
-            go.hideFlags = HideFlags.HideInInspector | HideFlags.HideInHierarchy | HideFlags.DontSave;
-            go.transform.position = transform.position;
-            go.transform.rotation = transform.rotation;
-
-            if (dontDestroyOnLoad)
-                GameObject.DontDestroyOnLoad(go);
-
-            uiCamera = /*gameObject*/go.AddComponent<Camera>();
-
-            uiCamera.hideFlags = HideFlags.HideInInspector | HideFlags.HideInHierarchy | HideFlags.DontSave;
-            uiCamera.useOcclusionCulling = false;
-            uiCamera.hdr = false;
-            uiCamera.orthographic = true;
-            uiCamera.clearFlags = CameraClearFlags.Depth;
-            uiCamera.depth = float.MaxValue;
-            uiCamera.nearClipPlane = 0.0f;
-            //uiCamera.farClipPlane = 1.0f;
-
-            if (disableUnityMouseEvents)
-            {
-                foreach (Camera cam in Camera.allCameras)
-                    cam.eventMask = 0;
-            }
-            else
-                uiCamera.eventMask = 0;
-        }
-
-        uiCamera.cullingMask = uiLayers;
-        uiCamera.orthographicSize = baseScreenHeight * 0.5f / pixelsPerUnit;
-        uiCamera.farClipPlane = maxDepth;
-    }
-
-    protected void DestroyCamera()
-    {
-        if (uiCamera != null)
-        {
-            Camera.DestroyImmediate(uiCamera.gameObject);
-            uiCamera = null;
-        }
-    }
-
-    protected Vector3 ScreenToWorld(Vector3 screenPos)
-    {
-        return uiCamera.ScreenToWorldPoint(screenPos);/*
-        Vector3 clipPos = new Vector3((screenPos.x * 2.0f / Screen.width ) - 1.0f,
-                                      (screenPos.y * 2.0f / Screen.height) - 1.0f,
-                                      uiCamera.nearClipPlane);
-        clipPos.y *= uiCamera.orthographicSize;
-        clipPos.x *= (uiCamera.orthographicSize * uiCamera.aspect);
-        return uiCamera.cameraToWorldMatrix * clipPos;*/
-    }
-
-    protected void SetupCamera()
-    {
-#if UNITY_EDITOR
-        uiCamera.cullingMask = uiLayers;
-        uiCamera.orthographicSize = baseScreenHeight * 0.5f;
-        uiCamera.farClipPlane = maxDepth;
-
-        if (Application.isPlaying)
-            uiCamera.ResetAspect();
-        else
-            uiCamera.aspect = baseScreenWidth / (float)baseScreenHeight;
-#else
-        uiCamera.farClipPlane = maxDepth;
-
-        uiCamera.ResetAspect();
-#endif
-    }
-    #endregion
-
     #region TimeSource
     public TimeSource UITimeSource
     {
@@ -641,12 +552,12 @@ public class UIManager : Manager<UIManager>
     #region Unity callbacks
     void OnEnable()
     {
-        this.CreateCamera();
+        
     }
 
     void OnDisable()
     {
-        this.DestroyCamera();
+        
     }
 
     new void Awake()
@@ -678,18 +589,11 @@ public class UIManager : Manager<UIManager>
 
     void Update()
     {
-        this.SetupCamera();
-
 #if UNITY_EDITOR
         if (Application.isPlaying)
 #endif
         {
-            if (uiCamera.pixelWidth != prevScreenWidth || uiCamera.pixelHeight != prevScreenHeight)
-            {
-                prevScreenWidth = uiCamera.pixelWidth;
-                prevScreenHeight = uiCamera.pixelHeight;
-                shouldDoLayout = true;
-            }
+
         }
     }
 
@@ -721,21 +625,12 @@ public class UIManager : Manager<UIManager>
             foreach (Camera cam in Camera.allCameras)
                 cam.eventMask = 0;
         }
-        else
-            uiCamera.eventMask = 0;
     }
 
 #if UNITY_EDITOR
     void OnDrawGizmos()
     {
-        if (uiCamera != null)
-        {
-            Gizmos.DrawWireCube(
-                transform.TransformPoint(Vector3.forward * (uiCamera.nearClipPlane + uiCamera.farClipPlane) * 0.5f),
-                new Vector3(2.0f * uiCamera.orthographicSize * uiCamera.aspect, 2.0f * uiCamera.orthographicSize, uiCamera.farClipPlane - uiCamera.nearClipPlane));
 
-            //Gizmos.DrawSphere(this.ScreenToWorld(Input.mousePosition), 0.1f);
-        }
     }
 #endif
     #endregion
