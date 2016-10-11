@@ -22,7 +22,7 @@ public class SlotMachine : MonoBehaviourEx
     public AudioClip end;
 
     private bool isRunning = false;
-    private float spinTime;
+    private float spinTime; 
 
     [SerializeField]
     private UnityEvent _onFinished = new UnityEvent();
@@ -153,6 +153,13 @@ public class SlotMachine : MonoBehaviourEx
                 reel.Spin();
             }
         }
+
+        yield return new WaitForSeconds(3f);
+
+        if (!isDespined)
+        {
+            DespinAll();
+        }
     }
 
     public void OnReelFinished()
@@ -168,6 +175,8 @@ public class SlotMachine : MonoBehaviourEx
 
         if (finishedReelCount == reels.Length)
         {
+            StopCoroutine(SpinCore());
+
             isRunning = false;
             OnFinished.Invoke();
 

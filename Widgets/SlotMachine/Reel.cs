@@ -70,6 +70,14 @@ public class Reel : MonoBehaviour
         }
     }
 
+    public string symbolType
+    {
+        get
+        {
+            return activeSymbols.Last().GetComponent<Symbol>().symbolType;
+        }
+    }
+
     [SerializeField]
     private UnityEvent _onFinished = new UnityEvent();
 
