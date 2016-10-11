@@ -16,13 +16,19 @@ public class SlotMachine : MonoBehaviourEx
 
     public Reel[] reels;
 
-    private AudioSource audioSource;
     public AudioClip start;
     public AudioClip loop;
     public AudioClip end;
 
-    private bool isRunning = false;
-    private float spinTime; 
+    [HideInInspector]
+    public bool isRunning = false;
+
+    private AudioSource audioSource;
+
+    private float spinTime;
+    private int finishedReelCount;
+
+    private Coroutine autoSpinCoroutine;
 
     [SerializeField]
     private UnityEvent _onFinished = new UnityEvent();
@@ -32,10 +38,6 @@ public class SlotMachine : MonoBehaviourEx
         get { return _onFinished; }
         set { _onFinished = value; }
     }
-
-    private int finishedReelCount;
-
-    private Coroutine autoSpinCoroutine;
 
     void Start()
     {
@@ -92,6 +94,23 @@ public class SlotMachine : MonoBehaviourEx
         }
     }
 
+    public void DespinAll()
+    {
+        if (!isDespined)
+        {
+            StartCoroutine(DespinAllCore());
+            isDespined = true;
+        }
+    }
+
+    public void Reset()
+    {
+        for (int i = 0; i < reels.Length; i++)
+        {
+            reels[i].Reset();
+        }
+    }
+
     private void Despin(int reelIndex, bool reminderwhenCall)
     {
         if (isRunning)
@@ -114,16 +133,7 @@ public class SlotMachine : MonoBehaviourEx
         }
     }
 
-    public void DespinAll()
-    {
-        if (!isDespined)
-        {
-            StartCoroutine(DespinAllCore());
-            isDespined = true;
-        }
-    }
-
-    public IEnumerator DespinAllCore()
+    private IEnumerator DespinAllCore()
     {
         yield return new WaitForEndOfFrame();
 
@@ -134,7 +144,7 @@ public class SlotMachine : MonoBehaviourEx
         }
     }
 
-    public IEnumerator SpinCore()
+    private IEnumerator SpinCore()
     {
         yield return new WaitForEndOfFrame();
 
@@ -162,12 +172,12 @@ public class SlotMachine : MonoBehaviourEx
         }
     }
 
-    public void OnReelFinished()
+    private void OnReelFinished()
     {
         StartCoroutine(OnReelFinishedCore());
     }
 
-    public IEnumerator OnReelFinishedCore()
+    private IEnumerator OnReelFinishedCore()
     {
         yield return null;
 

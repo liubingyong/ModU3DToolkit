@@ -5,6 +5,7 @@ using UnityEngine;
 using UnityEngine.Events;
 using PathologicalGames;
 using DG.Tweening;
+using System;
 
 public class Reel : MonoBehaviour
 {
@@ -27,33 +28,26 @@ public class Reel : MonoBehaviour
         }
     }
 
-    [HideInInspector]
-    public List<SymbolWrapper> allSymbols;
     //    [HideInInspector]
     public Symbol[] activeSymbols;
     public SpinMode spinMode;
+    public float rowHeight = 1.5f;
+    public int rowsCount = 1;
+    public string[] initialSymbolNames;
 
     public float maxSpeed = 1f;
     public float acceleration = 0.5f;
 
     public float currentSpeed = 0f;
+
+    [HideInInspector]
+    public List<SymbolWrapper> allSymbols;
     [HideInInspector]
     public bool inSpin = false;
     [HideInInspector]
     public bool inDespin = false;
     [HideInInspector]
-    public bool inLastRoll = false;
-    [HideInInspector]
     public bool isRunning = false;
-
-    public int rowsCount = 1;
-    public string[] initialSymbolNames;
-
-    public float rowHeight = 1.5f;
-
-    public bool speedFixedUpdate = true;
-
-    private SymbolWrapper lastElementPointer;
 
     private SlotMachine _slotMachine;
 
@@ -86,7 +80,9 @@ public class Reel : MonoBehaviour
         get { return _onFinished; }
         set { _onFinished = value; }
     }
-    
+
+    private SymbolWrapper lastElementPointer;
+
     void Start()
     {
         if (initialSymbolNames.Length < rowsCount)
@@ -112,13 +108,26 @@ public class Reel : MonoBehaviour
         inDespin = true;
     }
 
+    public void Reset()
+    {
+        inSpin = false;
+        isRunning = false;
+        inDespin = false;
+
+        currentSpeed = 0;
+
+        allSymbols.Clear();
+        activeSymbols = null;
+
+        LoadSymbols(initialSymbolNames, initialSymbolNames.Length - 1);
+    }
+
     public void ResetState()
     {
         inSpin = false;
         isRunning = false;
         inDespin = false;
 
-        speedFixedUpdate = true;
         OnFinished.Invoke();
     }
 
@@ -196,17 +205,12 @@ public class Reel : MonoBehaviour
 
     void FixedUpdate()
     {
-        if (inSpin && !inDespin && speedFixedUpdate)
+        if (inSpin && !inDespin)
         {
             if (currentSpeed < maxSpeed)
             {
                 currentSpeed = currentSpeed + acceleration * Time.fixedDeltaTime;
             }
-        }
-
-        if (inDespin && !inLastRoll)
-        {
-            inLastRoll = true;
         }
     }
 
