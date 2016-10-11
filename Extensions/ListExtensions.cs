@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 
 public static class ListExtensions
 {
@@ -28,5 +29,11 @@ public static class ListExtensions
             list[k] = list[n];
             list[n] = value;
         }
+    }
+
+    public static T PickRandom<T>(this IEnumerable<T> source)
+    {
+        var ticks = DateTime.Now.Ticks;
+        return source.ElementAt(new Random((int)(ticks & 0xffffffffL) | (int)(ticks >> 32)).Next(source.Count()));
     }
 }
