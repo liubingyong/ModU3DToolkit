@@ -32,7 +32,16 @@ namespace ModU3DToolkit.TransitionFX
             {
                 if (_instance == null)
                 {
-                    _instance = Camera.main.GetComponent<CameraTransitionsFX>();
+                    var uiCamera = GameObject.FindGameObjectWithTag("UICamera");
+
+                    if (uiCamera == null)
+                    {
+                        _instance = Camera.main.GetComponent<CameraTransitionsFX>();
+                    }
+                    else
+                    {
+                        _instance = uiCamera.GetComponent<CameraTransitionsFX>();
+                    }
 
                     if (_instance == null)
                         throw new UnityException("Main Camera does not have a TransitionFX extension.");
@@ -67,6 +76,7 @@ namespace ModU3DToolkit.TransitionFX
         public float TextureSmoothingExit = .2f;
 
         public bool StartSceneOnEnterState = true;
+		public bool AutoStart = false;
 
         Coroutine _transitionCoroutine;
         float _step;
@@ -106,6 +116,12 @@ namespace ModU3DToolkit.TransitionFX
                 _blit.enabled = true;
             }
         }
+
+		void Start() {
+			if (AutoStart) {
+				TransitionEnter ();
+			}
+		}
 
         /// <summary>
         /// Transition enter

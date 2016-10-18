@@ -25,10 +25,7 @@ public class SlotMachine : MonoBehaviourEx
 
     private AudioSource audioSource;
 
-    private float spinTime;
     private int finishedReelCount;
-
-    private Coroutine autoSpinCoroutine;
 
     [SerializeField]
     private UnityEvent _onFinished = new UnityEvent();
@@ -66,7 +63,6 @@ public class SlotMachine : MonoBehaviourEx
     {
         if (!isRunning)
         {
-            spinTime = Time.time;
             isDespined = false;
 
             isRunning = true;
@@ -192,7 +188,7 @@ public class SlotMachine : MonoBehaviourEx
 
             if (isAutoSpin)
             {
-                autoSpinCoroutine = StartCoroutine(AutoSpinCore());
+                StartCoroutine(AutoSpinCore());
             }
         }
     }

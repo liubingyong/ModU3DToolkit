@@ -93,6 +93,11 @@ namespace ModU3DToolkit.TransitionFX
             _tooltip = new GUIContent("Start Scene On Enter State", "If selected, on scene start the Enter FX will be loaded.");
             EditorGUILayout.PropertyField(serializedObject.FindProperty("StartSceneOnEnterState"), _tooltip);
 
+			// Start scene on enter state
+			EditorGUILayout.Space();
+			_tooltip = new GUIContent("Auto Start", "If selected, start transition when on scene start.");
+			EditorGUILayout.PropertyField(serializedObject.FindProperty("AutoStart"), _tooltip);
+
 
             // Limit values
             if (proCamera2DTransitionsFX.DurationEnter < 0)
@@ -107,7 +112,6 @@ namespace ModU3DToolkit.TransitionFX
 
             // Apply properties
             serializedObject.ApplyModifiedProperties();
-
 
             EditorGUILayout.Space();
             EditorGUILayout.Space();
