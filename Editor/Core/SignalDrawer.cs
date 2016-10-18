@@ -55,7 +55,7 @@ public class SignalDrawer : PropertyDrawer
                         continue;
 
                     Type type = component.GetType();
-                    MethodInfo[] methods = type.GetMethods(BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.DeclaredOnly);
+					MethodInfo[] methods = type.GetMethods(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.FlattenHierarchy);
                     foreach (MethodInfo method in methods)
                     {
                         ParameterInfo[] parameters = method.GetParameters();
