@@ -2,7 +2,7 @@
 using System.Collections;
 using UnityEngine.Events;
 
-public class ConcreteUnityEvent<T> : UnityEvent<T>
+public class UnityEventWithParameters<T> : UnityEvent<T>
 {
 
 }

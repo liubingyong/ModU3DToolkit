@@ -20,7 +20,7 @@ public class Symbol : MonoBehaviour
     public string symbolType;
 
     [SerializeField]
-    private UnityEvent<GameObject> _onRolled = new ConcreteUnityEvent<GameObject> ();
+	private UnityEvent<GameObject> _onRolled = new UnityEventWithParameters<GameObject> ();
 
     public UnityEvent<GameObject> OnRolled {
         get { return _onRolled; }
