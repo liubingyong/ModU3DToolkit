@@ -1,273 +1,161 @@
 ﻿using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
-
-#if UNITY_EDITOR
-using UnityEditor;
-#endif
+using System.Linq;
 
 public class GhostTrail : MonoBehaviour {
+	public Material ghostMaterial;
+	public string colorLabelName;
+	public Color color = new Color(255, 255, 255, 100);
 
-    #region public members
+	public float maxTrails;
+	public float spawnRate;
+	public float lifeTime;
+	public float fadeTime;
+	public bool renderOnMotion;
 
-    [Range(2, 200)]
-    [Tooltip("Number of Ghost frames in the object's trail")]
-    public int trailSize = 20;
+	private MeshFilter[] meshFilters = null;  
+	private MeshRenderer[] meshRenderers = null;  
+	private SkinnedMeshRenderer[] skinnedMeshRenderers = null;  
 
-    [Tooltip("Spacing increments on a frame basis - n spacing setting results in waiting n frames before the next ghost will be set.")]
-    [Range(0, 20)]
-    public int spacing = 0;
+	private float spawnInterval;
+	private float lastSpawnTime;
 
-    [Tooltip("Pick a color for the trail.  The Aplha of this color will be used to determine the transparancy fluctuation.")]
-    public Color color = new Color(255, 255, 255, 100);
+	private Vector3 lastFramePosition;
 
-    [Tooltip("If the Ghost Material is not set, then the material from the GameObject will be used for the ghosts.")]
-    [ContextMenuItem("Clear List", "DeleteMaterials")]
-    public List<Material> ghostMaterial;
+	public class GhostTrailSettings  
+	{
+		public GameObject go;  
+		public float fadeTime;  
+		public float lifeTime;  
 
-    [Tooltip("If checked, and a RigidBody is attached to this gameobject, then ghosts will only render when this gameobject is in motion.")]
-    public bool renderOnMotion;
+		public List<Material> materials = new List<Material> ();
 
-    [Tooltip("Set this to true to use the Aplha Fluctuation Override value.  See tooltip for Alpha Fluctuation Override.")]
-    public bool colorAlphaOverride;
+		public GhostTrailSettings(GameObject go, Material material, float lifeTime, float fadeTime)  
+		{  
+			this.go = go;  
+			this.lifeTime = lifeTime;  
+			this.fadeTime = fadeTime;  
 
-    [Tooltip("If the Color Alpha Override bool is set to true, this value (up to 255) will be used instead of the automagically set alpha fluctuation for the ghosts.")]
-    [Range(0, 1)]
-    public float alphaFluctuationOverride;
+			foreach (Renderer renderer in go.GetComponentsInChildren<Renderer>())  
+			{  
+				if (renderer as MeshRenderer || renderer as SkinnedMeshRenderer)  
+				{  
+					renderer.sharedMaterial = material;
+					materials.Add(renderer.material);
+				}  
+				else  
+				{
+					renderer.enabled = false;  
+				}  
+			}
+		}
+	}
 
-    [Range(0, 250)]
-    public int alphaFluctuationDivisor;
+	private float updateInterval = 0.05f;
+	private float lastUpdateTime;
 
-    public Renderer targetRenderer;
+	private List<GhostTrailSettings> trails;
 
-    public Vector3 trailOffset;
-    #endregion
+	// Use this for initialization
+	void OnEnable () {
+		meshFilters = this.gameObject.GetComponentsInChildren<MeshFilter> ();  
+		meshRenderers = this.gameObject.GetComponentsInChildren<MeshRenderer> ();
+		skinnedMeshRenderers = this.gameObject.GetComponentsInChildren<SkinnedMeshRenderer>();
+		spawnInterval = 1 / spawnRate;
 
-    #region private members
+		for (int i = 0; i < meshRenderers.Length; i++) {
+			meshRenderers[i].material.renderQueue += 1;
+		}
 
-    private int spacingCounter = 0;
-    private List<Vector3> ghostPositions = new List<Vector3>();
-    private List<GameObject> ghostList = new List<GameObject>();
-    //private bool hasRigidBody;
-    
-    private float alpha;
-    private bool killSwitch;
-    private Vector3 lastFramePosition;
+		for (int i = 0; i < skinnedMeshRenderers.Length; i++) {
+			skinnedMeshRenderers[i].material.renderQueue += 1;
+		}
 
-    #endregion
+		trails = new List<GhostTrailSettings> ();
 
-    // Use this for initialization
-    void Start () {
-        if (targetRenderer == null)
-        {
-            targetRenderer = gameObject.GetComponent<Renderer>();
-            targetRenderer.material.renderQueue += 1;
-        }
+		ghostMaterial.SetColor(colorLabelName, color);  
+	}
 
-        ghostMaterial = TruncateMaterialList(ghostMaterial);
+	// Update is called once per frame
+	void Update () {
+		if (Time.time - lastUpdateTime > updateInterval) {
+			for (int i = trails.Count - 1; i >= 0; --i)  
+			{  
+				trails[i].lifeTime -= (Time.time - lastUpdateTime);  
 
-        if (ghostMaterial.Count == 0)
-            ghostMaterial.Add(targetRenderer.sharedMaterial);
+				if (trails[i].lifeTime <= 0)  
+				{  
+					GameObject.Destroy(trails[i].go);
+					trails.RemoveAt(i);
+					continue;  
+				}  
 
-        //Vector3 position = gameObject.transform.position + trailOffset;
+				if (trails[i].lifeTime < trails[i].fadeTime && !string.IsNullOrEmpty(colorLabelName))  
+				{  
+					float alpha = trails[i].lifeTime / trails[i].fadeTime;  
 
-        //for (int i = 0; i < trailSize; i++)
-        //    Populate(position, true);
+					foreach (Material material in trails[i].materials)  
+					{  
+						if (material.HasProperty(colorLabelName))  
+						{  
+							Color color = material.GetColor(colorLabelName);  
+							color.a = alpha;
+							color.r = color.r;
+							color.g = color.g;
+							color.b = color.b;
+							material.SetColor(colorLabelName, color);  
+						}  
+					}  
+				}               
+			}
 
-        alpha = color.a;
+			lastUpdateTime = Time.time;
+		}
 
-        spacingCounter = spacing;
+		if (Time.time - lastSpawnTime > spawnInterval && trails.Count < maxTrails * meshFilters.Length) {
+			if (renderOnMotion && this.transform.position == lastFramePosition) {
+				return;
+			}
 
-        if (spacing < 0)
-            spacing = 0;
+			for (int i = 0; skinnedMeshRenderers != null && i < skinnedMeshRenderers.Length; ++i) {  
+				Mesh mesh = new Mesh ();  
+				skinnedMeshRenderers [i].BakeMesh (mesh);  
 
-        //hasRigidBody = this.gameObject.GetComponent<Rigidbody>() != null ? true : false;
+				GameObject go = new GameObject ();  
+				//				go.hideFlags = HideFlags.HideAndDontSave;
+				go.name = gameObject.name + " - GhostTrail";
+				go.transform.position = skinnedMeshRenderers [i].transform.position;
+				go.transform.rotation = skinnedMeshRenderers [i].transform.rotation;
+				go.transform.localScale = skinnedMeshRenderers [i].transform.localScale;
 
-        ghostMaterial.Reverse();
-    }
+				MeshFilter meshFilter = go.AddComponent<MeshFilter> ();  
+				meshFilter.mesh = mesh;  
 
-    void OnDisable()
-    {
-        ClearTrail();
-    }
+				MeshRenderer meshRenderer = go.AddComponent<MeshRenderer> ();  
 
-    // Update is called once per frame
-    void Update () {
-        if (killSwitch)
-        {
-            return;
-        }
+				trails.Add (new GhostTrailSettings(go, ghostMaterial, lifeTime, fadeTime));
+			}  
 
-        if (ghostMaterial.Count == 0)
-            ghostMaterial.Add(targetRenderer.sharedMaterial);
+			for (int i = 0; meshRenderers != null && i < meshRenderers.Length; ++i) {  
+				GameObject go = new GameObject ();  
+				//				go.hideFlags = HideFlags.HideAndDontSave; 
+				go.name = gameObject.name + " - GhostTrail";
+				go.transform.position = meshRenderers [i].transform.position;
+				go.transform.rotation = meshRenderers [i].transform.rotation;
+				go.transform.localScale = meshRenderers [i].transform.localScale;
 
-        if (trailSize < ghostList.Count)
-        {
-            for (int i = trailSize; i < ghostList.Count - 1; i++)
-            {
-                GameObject gone = ghostList[i];
-                GameObject.Destroy(gone);
-                ghostList.RemoveAt(i);
-            }
+				MeshFilter meshFilter = go.AddComponent<MeshFilter> ();  
+				meshFilter.mesh = meshRenderers[i].GetComponent<MeshFilter>().mesh;  
 
-        }
-        
-        if (spacingCounter < spacing)
-        {
-            spacingCounter++;
-            return;
-        }
-        Vector3 position = gameObject.transform.position + trailOffset;
+				MeshRenderer meshRenderer = go.AddComponent<MeshRenderer> ();
 
-        if (ghostList.Count < trailSize)
-        {
+				trails.Add (new GhostTrailSettings(go, ghostMaterial, lifeTime, fadeTime));
+			}
 
-            Populate(position, false);
-        }
-        else
-        {
-            GameObject gone = ghostList[0];
-            ghostList.RemoveAt(0);
-            GameObject.Destroy(gone);
-            Populate(position, false);
-        }
-        float temp;
-        if (colorAlphaOverride)
-            temp = alphaFluctuationOverride;
-        else
-        {
-            temp = alpha;
-        }
-        int materialDivisor = (ghostList.Count - 1) / ghostMaterial.Count + 1;
-        for (int i = ghostList.Count - 1; i >= 0; i--)
-        {
-            temp -= colorAlphaOverride && alphaFluctuationDivisor != 0 ?
-                alphaFluctuationOverride / alphaFluctuationDivisor : alpha / ghostList.Count;
-            color.a = temp;
-            
-            var renderer = ghostList[i].GetComponent<Renderer>();
-            int subMat = (int)Mathf.Floor(i / materialDivisor);
-            renderer.material = subMat <= 0 ? ghostMaterial[0] : ghostMaterial[subMat];
-            renderer.material.SetColor("_Color", color);
-        }
-        spacingCounter = 0;
+			lastSpawnTime = Time.time;
+		}
 
-        lastFramePosition = this.transform.position;
-    }
-
-    #region public methods
-
-    public void ClearTrail()
-    {
-        foreach (var s in ghostList)
-            GameObject.Destroy(s);
-        ghostList.Clear();
-        ghostPositions.Clear();
-    }
-
-    private void KillSwitchEngage()
-    {
-        killSwitch = true;
-        foreach (GameObject g in ghostList)
-            GameObject.Destroy(g);
-    }
-
-    void OnDestroy()
-    {
-        killSwitch = true;
-        KillSwitchEngage();
-    }
-
-    public void AddToMaterialList(Material material)
-    {
-        ghostMaterial.Add(material);
-    }
-
-#if UNITY_EDITOR
-    public void RestoreDefaults()
-    {
-        Undo.RecordObject(gameObject.GetComponent<GhostTrail>(), "Restore Defaults");
-        ghostMaterial.Clear();
-        trailSize = 20;
-        color = new Color(255, 255, 255, 50);
-        spacing = 0;
-        renderOnMotion = false;
-        colorAlphaOverride = false;
-        alphaFluctuationOverride = 0;
-        alphaFluctuationDivisor = 1;
-
-    }
-#endif
-    #endregion
-
-    private void Populate(Vector3 position, bool allowPositionOverride)
-    {
-        if (renderOnMotion
-           //&& hasRigidBody
-           //&& gameObject.GetComponent<Rigidbody>().velocity == Vector3.zero
-           && this.transform.position == lastFramePosition
-           && !allowPositionOverride)
-        {
-            if (ghostList.Count > 0)
-            {
-                GameObject gone = ghostList[0];
-                ghostList.RemoveAt(0);
-                GameObject.Destroy(gone);
-            }
-            return;
-        }
-
-        SkinnedMeshRenderer convertedSkinnedRenderer;
-        MeshRenderer convertedMeshRenderer;
-        
-        if ((convertedSkinnedRenderer = targetRenderer as SkinnedMeshRenderer) != null)
-        {
-            GameObject g = new GameObject();
-            g.name = gameObject.name + " - GhostTrail";
-            g.AddComponent<MeshFilter>();
-            g.AddComponent<MeshRenderer>();
-            g.transform.position = position;
-            g.transform.localScale = targetRenderer.transform.localScale;
-            g.transform.rotation = targetRenderer.transform.rotation;
-
-            var mesh = new Mesh();
-            convertedSkinnedRenderer.BakeMesh(mesh);
-            g.GetComponent<MeshFilter>().mesh = mesh;
-            g.GetComponent<MeshRenderer>().sharedMaterial = ghostMaterial[0];
-            g.GetComponent<MeshRenderer>().sharedMaterial.SetColor("_Color", color);
-
-            ghostList.Add(g);
-        }
-        else if ((convertedMeshRenderer = targetRenderer as MeshRenderer) != null)
-        {
-            GameObject g = new GameObject();
-            g.name = gameObject.name + " - GhostTrail";
-            g.AddComponent<MeshFilter>();
-            g.AddComponent<MeshRenderer>();
-            g.transform.position = position;
-            g.transform.localScale = targetRenderer.transform.localScale;
-            g.transform.rotation = targetRenderer.transform.rotation;
-            g.GetComponent<MeshFilter>().mesh = convertedMeshRenderer.GetComponent<MeshFilter>().mesh;
-            g.GetComponent<MeshRenderer>().sharedMaterial = ghostMaterial[0];
-            g.GetComponent<MeshRenderer>().sharedMaterial.SetColor("_Color", color);
-
-            ghostList.Add(g);
-        }
-    }
-
-    private List<Material> TruncateMaterialList(List<Material> materialList)
-    {
-        List<Material> tempList = new List<Material>();
-        foreach (Material material in materialList)
-        {
-            if (material)
-                tempList.Add(material);
-        }
-        return tempList;
-    }
-
-    private void DeleteMaterials()
-    {
-        ghostMaterial.Clear();
-    }
+		lastFramePosition = this.transform.position;
+	}
 }
