@@ -24,7 +24,5 @@ public abstract class BasePage : MonoBehaviour {
 		{
 			Manager<UIManager>.Get().GoToPage(nextPage);
 		}
-
-		Manager<UIRoot>.Get().lastPageShown = currentUIPage.name;
 	}
 }

@@ -159,7 +159,7 @@ public class GhostTrail : MonoBehaviour {
 			lastUpdateTime = Time.time;
 		}
 
-		if (autoSpawn && Time.time - lastSpawnTime > spawnInterval && trails.Count < maxTrails * meshFilters.Length) {
+		if (autoSpawn && Time.time - lastSpawnTime > spawnInterval && trails.Count < maxTrails * (meshFilters.Length + skinnedMeshRenderers.Length)) {
 			if (renderOnMotion && this.transform.position == lastFramePosition) {
 				return;
 			}
