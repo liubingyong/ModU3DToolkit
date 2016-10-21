@@ -103,8 +103,15 @@ public class GhostTrail : MonoBehaviour {
 		}
 	}
 
-	// Use this for initialization
-	void OnEnable () {
+    public void ClearTrail()
+    {
+        foreach (var t in trails)
+            GameObject.Destroy(t.go);
+        trails.Clear();
+    }
+
+    // Use this for initialization
+    void OnEnable () {
 		meshFilters = this.gameObject.GetComponentsInChildren<MeshFilter> ();  
 		meshRenderers = this.gameObject.GetComponentsInChildren<MeshRenderer> ();
 		skinnedMeshRenderers = this.gameObject.GetComponentsInChildren<SkinnedMeshRenderer>();
