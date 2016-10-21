@@ -18,6 +18,7 @@ public class GhostTrail : MonoBehaviour {
 	private MeshRenderer[] meshRenderers = null;  
 	private SkinnedMeshRenderer[] skinnedMeshRenderers = null;  
 
+	public bool autoSpawn;
 	private float spawnInterval;
 	private float lastSpawnTime;
 
@@ -56,6 +57,51 @@ public class GhostTrail : MonoBehaviour {
 	private float lastUpdateTime;
 
 	private List<GhostTrailSettings> trails;
+
+	public void SetTrail() {
+		SetTrail (lifeTime, fadeTime);
+	}
+
+	public void SetTrail(float newlifeTime) {
+		SetTrail (newlifeTime, fadeTime);
+	}
+
+	public void SetTrail(float newlifeTime, float newfadeTime) {
+		for (int i = 0; skinnedMeshRenderers != null && i < skinnedMeshRenderers.Length; ++i) {  
+			Mesh mesh = new Mesh ();  
+			skinnedMeshRenderers [i].BakeMesh (mesh);  
+
+			GameObject go = new GameObject ();  
+			//				go.hideFlags = HideFlags.HideAndDontSave;
+			go.name = gameObject.name + " - GhostTrail";
+			go.transform.position = skinnedMeshRenderers [i].transform.position;
+			go.transform.rotation = skinnedMeshRenderers [i].transform.rotation;
+			go.transform.localScale = skinnedMeshRenderers [i].transform.localScale;
+
+			MeshFilter meshFilter = go.AddComponent<MeshFilter> ();  
+			meshFilter.mesh = mesh;  
+
+			MeshRenderer meshRenderer = go.AddComponent<MeshRenderer> ();  
+
+			trails.Add (new GhostTrailSettings(go, ghostMaterial, newlifeTime, newfadeTime));
+		}  
+
+		for (int i = 0; meshRenderers != null && i < meshRenderers.Length; ++i) {  
+			GameObject go = new GameObject ();  
+			//				go.hideFlags = HideFlags.HideAndDontSave; 
+			go.name = gameObject.name + " - GhostTrail";
+			go.transform.position = meshRenderers [i].transform.position;
+			go.transform.rotation = meshRenderers [i].transform.rotation;
+			go.transform.localScale = meshRenderers [i].transform.localScale;
+
+			MeshFilter meshFilter = go.AddComponent<MeshFilter> ();  
+			meshFilter.mesh = meshRenderers[i].GetComponent<MeshFilter>().mesh;  
+
+			MeshRenderer meshRenderer = go.AddComponent<MeshRenderer> ();
+
+			trails.Add (new GhostTrailSettings(go, ghostMaterial, newlifeTime, newfadeTime));
+		}
+	}
 
 	// Use this for initialization
 	void OnEnable () {
@@ -113,45 +159,12 @@ public class GhostTrail : MonoBehaviour {
 			lastUpdateTime = Time.time;
 		}
 
-		if (Time.time - lastSpawnTime > spawnInterval && trails.Count < maxTrails * meshFilters.Length) {
+		if (autoSpawn && Time.time - lastSpawnTime > spawnInterval && trails.Count < maxTrails * meshFilters.Length) {
 			if (renderOnMotion && this.transform.position == lastFramePosition) {
 				return;
 			}
 
-			for (int i = 0; skinnedMeshRenderers != null && i < skinnedMeshRenderers.Length; ++i) {  
-				Mesh mesh = new Mesh ();  
-				skinnedMeshRenderers [i].BakeMesh (mesh);  
-
-				GameObject go = new GameObject ();  
-				//				go.hideFlags = HideFlags.HideAndDontSave;
-				go.name = gameObject.name + " - GhostTrail";
-				go.transform.position = skinnedMeshRenderers [i].transform.position;
-				go.transform.rotation = skinnedMeshRenderers [i].transform.rotation;
-				go.transform.localScale = skinnedMeshRenderers [i].transform.localScale;
-
-				MeshFilter meshFilter = go.AddComponent<MeshFilter> ();  
-				meshFilter.mesh = mesh;  
-
-				MeshRenderer meshRenderer = go.AddComponent<MeshRenderer> ();  
-
-				trails.Add (new GhostTrailSettings(go, ghostMaterial, lifeTime, fadeTime));
-			}  
-
-			for (int i = 0; meshRenderers != null && i < meshRenderers.Length; ++i) {  
-				GameObject go = new GameObject ();  
-				//				go.hideFlags = HideFlags.HideAndDontSave; 
-				go.name = gameObject.name + " - GhostTrail";
-				go.transform.position = meshRenderers [i].transform.position;
-				go.transform.rotation = meshRenderers [i].transform.rotation;
-				go.transform.localScale = meshRenderers [i].transform.localScale;
-
-				MeshFilter meshFilter = go.AddComponent<MeshFilter> ();  
-				meshFilter.mesh = meshRenderers[i].GetComponent<MeshFilter>().mesh;  
-
-				MeshRenderer meshRenderer = go.AddComponent<MeshRenderer> ();
-
-				trails.Add (new GhostTrailSettings(go, ghostMaterial, lifeTime, fadeTime));
-			}
+			SetTrail ();
 
 			lastSpawnTime = Time.time;
 		}
