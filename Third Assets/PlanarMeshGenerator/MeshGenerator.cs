@@ -1,15 +1,21 @@
 ﻿using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
+
+#if UNITY_EDITOR
 using UnityEditor;
+#endif
+
 /*/////////////////////////////////////////100-chars////////////////////////////////////////////////
 * A 2D mesh generator that implemented using a clipping algorithm with concave abilities.
 * It's a good idea to delete this script from gameobjects once the finalized mesh has been 
 * designed in-editor.
 *///////////////////////////////////////////////////////////////////////////////////////////////////
-namespace PlanarMeshGenerator {
+namespace PlanarMeshGenerator
+{
     [ExecuteInEditMode, RequireComponent(typeof(MeshFilter), typeof(MeshRenderer))]
-    public class MeshGenerator : MonoBehaviour {
+    public class MeshGenerator : MonoBehaviour
+    {
         [HideInInspector]
         public List<Vector2> points; //the points in this polygon, in CCW order ;)
         [HideInInspector]
@@ -26,24 +32,29 @@ namespace PlanarMeshGenerator {
         List<int> tris;
         List<Vector2> rimUV;
         int numOfPolygonPointsOnLastMesh = 0; //how large was the points List when the mesh was last built
-        void OnEnable() {
+        void OnEnable()
+        {
             Setup();
         }
         /// <summary>
         /// Sets up the game object, making sure the components are alright. If it rebuilt the mesh during the process, returns true
         /// </summary>
         /// <returns></returns>
-        bool Setup() {
+        bool Setup()
+        {
             bool needToRebuild = false;
-            if (meshFilter == null) {
+            if (meshFilter == null)
+            {
                 meshFilter = this.GetComponent<MeshFilter>();
-                if (meshFilter == null) {
+                if (meshFilter == null)
+                {
                     meshFilter = this.gameObject.AddComponent<MeshFilter>();
                     needToRebuild = true;
                 }
             }
 
-            if (points == null || points.Count < 3) {
+            if (points == null || points.Count < 3)
+            {
                 points = new List<Vector2>();
                 points.Add(Vector2.right * 3);
                 points.Add(Vector2.up * 3);
@@ -51,7 +62,8 @@ namespace PlanarMeshGenerator {
                 numOfPolygonPointsOnLastMesh = 3;
                 needToRebuild = true;
             }
-            if ((!linkedToClones && wasLinkedToClones) || meshFilter.sharedMesh == null) {
+            if ((!linkedToClones && wasLinkedToClones) || meshFilter.sharedMesh == null)
+            {
                 wasLinkedToClones = linkedToClones;
                 meshFilter.sharedMesh = new Mesh();
                 needToRebuild = true;
@@ -59,7 +71,8 @@ namespace PlanarMeshGenerator {
             if (needToRebuild) BuildMesh();
             return needToRebuild;
         }
-        void Reset() {
+        void Reset()
+        {
             if (points != null) points.Clear();
             else points = new List<Vector2>();
             linkedToClones = false;
@@ -71,19 +84,24 @@ namespace PlanarMeshGenerator {
 
 
         //***************************MESH BUILDING LOGIC********************************//
-        public void UserRebuildMesh() {
+        public void UserRebuildMesh()
+        {
+#if UNITY_EDITOR
             if (Setup()) return;
             Object[] objs = new Object[2];
             objs[0] = this;
             objs[1] = meshFilter.sharedMesh;
             Undo.RegisterCompleteObjectUndo(this.meshFilter, "Rebuilding mesh"); //TODO: REGISTER REBUILD TO UNDO
             BuildMesh();
+#endif
         }
 
-        public void BuildMesh() {
+        public void BuildMesh()
+        {
             vertices = new List<Vector3>();
             rimUV = new List<Vector2>();
-            for (int i = 0; i < points.Count; i++) {
+            for (int i = 0; i < points.Count; i++)
+            {
                 vertices.Add(points[i]);
                 rimUV.Add(Vector2.zero);
             }
@@ -94,7 +112,8 @@ namespace PlanarMeshGenerator {
                 GenerateRimMesh();
             Vector3[] norms = new Vector3[vertices.Count];
             Vector2[] uvs = new Vector2[vertices.Count];
-            for (int i = 0; i < norms.Length; i++) {
+            for (int i = 0; i < norms.Length; i++)
+            {
                 norms[i] = Vector3.back;
                 uvs[i] = vertices[i];
             }
@@ -111,25 +130,30 @@ namespace PlanarMeshGenerator {
             meshFilter.sharedMesh.uv2 = rimUV.ToArray();
         }
         //Struct used during clipping algorithm
-        struct ClippingElem {
+        struct ClippingElem
+        {
             public Vector3 pt;
             public int ind;
         }
         //Generates tris via the ear-clipping method
-        public int[] EarClipping(Vector3[] pts) {
+        public int[] EarClipping(Vector3[] pts)
+        {
             List<int> tris = new List<int>();//stores the tris(clockwise! Remember, clockwise)
             List<ClippingElem> points = new List<ClippingElem>();
-            for (int i = 0; i < pts.Length; i++) {
+            for (int i = 0; i < pts.Length; i++)
+            {
                 ClippingElem toAdd = new ClippingElem();
                 toAdd.pt = pts[i];
                 toAdd.ind = i;
                 points.Add(toAdd);
             }
 
-            while (true) {
+            while (true)
+            {
                 //Terminating cases
                 if (points.Count < 3) break;
-                if (points.Count == 3) {
+                if (points.Count == 3)
+                {
                     tris.Add(points[2].ind);
                     tris.Add(points[1].ind);
                     tris.Add(points[0].ind);
@@ -137,7 +161,8 @@ namespace PlanarMeshGenerator {
                 }
 
                 bool clipped = false;//tracks if a triangle was clipped this round
-                for (int i = 0; i < points.Count; i++) {
+                for (int i = 0; i < points.Count; i++)
+                {
                     int prevInd = i - 1;
                     if (prevInd < 0) prevInd += points.Count;
                     int nextInd = (i + 1) % points.Count;
@@ -153,15 +178,18 @@ namespace PlanarMeshGenerator {
                         continue;
                     //if there's a different point sitting inside this triangle, nope 
                     bool pointInTri = false;
-                    for (int j = 0; j < points.Count; j++) {
+                    for (int j = 0; j < points.Count; j++)
+                    {
                         if (j == i || j == prevInd || j == nextInd) continue; //dont check the points being considered
-                        if (PointInTri2(prev, cur, next, points[j].pt)) {
+                        if (PointInTri2(prev, cur, next, points[j].pt))
+                        {
                             pointInTri = true;
                             break;
                         }
                     }
                     //if there were no points in tri, and this is not an interior point, clip it!
-                    if (!pointInTri) {
+                    if (!pointInTri)
+                    {
                         clipped = true;
                         tris.Add(points[nextInd].ind);
                         tris.Add(points[i].ind);
@@ -176,10 +204,12 @@ namespace PlanarMeshGenerator {
             return tris.ToArray();
         }
         //Generate's mesh at for the rim
-        public void GenerateRimMesh() {
+        public void GenerateRimMesh()
+        {
             if (this.vertices == null || this.tris == null) return;
             Vector3[] origVerts = vertices.ToArray();
-            for (int i = 0; i < origVerts.Length; i++) {
+            for (int i = 0; i < origVerts.Length; i++)
+            {
                 int prevInd = i - 1;
                 if (prevInd < 0) prevInd += origVerts.Length;
                 int nextInd = (i + 1) % origVerts.Length;
@@ -203,7 +233,8 @@ namespace PlanarMeshGenerator {
             tris.Add(vertices.Count - 1);
         }
         //Generates the rim at an interior angle, adding the vertices and tris generated to the  vertices and tris Lists
-        private void GenerateRimAtInteriorAngle(int prevInd, int curInd, Vector2 cur, Vector2 toPrev, Vector2 toNext, float angle) {
+        private void GenerateRimAtInteriorAngle(int prevInd, int curInd, Vector2 cur, Vector2 toPrev, Vector2 toNext, float angle)
+        {
             angle *= -.5f * Mathf.Deg2Rad;
             Vector3 normAtVert = (toPrev.normalized + toNext.normalized);
             normAtVert.z = 0;
@@ -222,7 +253,8 @@ namespace PlanarMeshGenerator {
             rimUV.Add(Vector2.right * rimFadeModifier);
         }
         //Generates the rim at an exterior angle, adding the vertices and tris generated to the vertices and tris Lists
-        private void GenerateRimAtExteriorAngle(int prevInd, int curInd, Vector2 cur, Vector2 toPrev, Vector2 toNext) {
+        private void GenerateRimAtExteriorAngle(int prevInd, int curInd, Vector2 cur, Vector2 toPrev, Vector2 toNext)
+        {
             Vector3 tPrev = toPrev;
             Vector3 tNext = toNext;
             Vector3 curV3 = cur;
@@ -257,16 +289,19 @@ namespace PlanarMeshGenerator {
             rimUV.Add(Vector2.right * rimFadeModifier);
         }
         //gets or creates a meshfilter if needed
-        void GetMeshFilter() {
+        void GetMeshFilter()
+        {
             meshFilter = this.GetComponent<MeshFilter>();
-            if (meshFilter == null) {
+            if (meshFilter == null)
+            {
                 meshFilter = this.gameObject.AddComponent<MeshFilter>();
             }
             if (meshFilter.sharedMesh == null)
                 meshFilter.sharedMesh = new Mesh();
         }
         //Determines the angle(in degrees) between 2 vectors.  This is for CCW?
-        float SignedAngleBetween(Vector3 a, Vector3 b, Vector3 n) {
+        float SignedAngleBetween(Vector3 a, Vector3 b, Vector3 n)
+        {
             // angle in [0,180]
             a.z = 0;
             b.z = 0;
@@ -278,7 +313,8 @@ namespace PlanarMeshGenerator {
             return signed_angle;
         }
         //checks if the point p is in the triangle ABC
-        bool PointInTri2(Vector2 A, Vector2 B, Vector2 C, Vector2 P) {
+        bool PointInTri2(Vector2 A, Vector2 B, Vector2 C, Vector2 P)
+        {
             Vector2 v0 = C - A;
             Vector2 v1 = B - A;
             Vector2 v2 = P - A;
@@ -299,12 +335,16 @@ namespace PlanarMeshGenerator {
         /// <summary>
         /// Generates and adds an EdgeCollider to the gameobject based on the mesh's current shape
         /// </summary>
-        public void AddEdgeCollider(int startInd, int endInd) {
-            if (this.gameObject.GetComponent<Collider>() != null) {
+        public void AddEdgeCollider(int startInd, int endInd)
+        {
+#if UNITY_EDITOR
+            if (this.gameObject.GetComponent<Collider>() != null)
+            {
                 Debug.Log("Cannot add EdgeCollider because gameobject already contains a Collider(3D)");
                 return;
             }
-            if (vertices == null || this.points == null || this.points.Count < 3) {
+            if (vertices == null || this.points == null || this.points.Count < 3)
+            {
                 Debug.Log("MeshGenerator needs at least 3 points to build mesh");
                 return;
             }
@@ -312,29 +352,38 @@ namespace PlanarMeshGenerator {
             Undo.RegisterCreatedObjectUndo(pc, "Undo add EdgeCollider");
             Vector2[] pts;
             //If generating around a rim
-            if (vertices.Count >= numOfPolygonPointsOnLastMesh * 2) {
+            if (vertices.Count >= numOfPolygonPointsOnLastMesh * 2)
+            {
                 pts = new Vector2[vertices.Count - numOfPolygonPointsOnLastMesh];
-                for (int i = 0; i < pts.Length; i++) {
+                for (int i = 0; i < pts.Length; i++)
+                {
                     pts[i] = vertices[i + numOfPolygonPointsOnLastMesh];
                 }
             }//if generating without a rim
-            else {
+            else
+            {
                 pts = new Vector2[vertices.Count];
-                for (int i = 0; i < vertices.Count; i++) {
+                for (int i = 0; i < vertices.Count; i++)
+                {
                     pts[i] = vertices[i];
                 }
             }
             pc.points = pts;
+#endif
         }
         /// <summary>
         /// Generates and adds a PolygonCollider to the gameobject based on the mesh's current shape
         /// </summary>
-        public void AddPolygonCollider() {
-            if (this.gameObject.GetComponent<Collider>() != null) {
+        public void AddPolygonCollider()
+        {
+#if UNITY_EDITOR
+            if (this.gameObject.GetComponent<Collider>() != null)
+            {
                 Debug.Log("Cannot add PolygonCollider because gameobject already contains a Collider(3D)");
                 return;
             }
-            if (vertices == null || this.points == null || this.points.Count < 3) {
+            if (vertices == null || this.points == null || this.points.Count < 3)
+            {
                 Debug.Log("MeshGenerator needs at least 3 points to build mesh");
                 return;
             }
@@ -342,31 +391,40 @@ namespace PlanarMeshGenerator {
             Undo.RegisterCreatedObjectUndo(pc, "Undo add PolygonCollider");
             Vector2[] pts;
             //If generating around a rim
-            if (vertices.Count >= numOfPolygonPointsOnLastMesh * 2) {
+            if (vertices.Count >= numOfPolygonPointsOnLastMesh * 2)
+            {
                 pts = new Vector2[vertices.Count - numOfPolygonPointsOnLastMesh];
-                for (int i = 0; i < pts.Length; i++) {
+                for (int i = 0; i < pts.Length; i++)
+                {
                     pts[i] = vertices[i + numOfPolygonPointsOnLastMesh];
                 }
             }//if generating without a rim
-            else {
+            else
+            {
                 pts = new Vector2[vertices.Count];
-                for (int i = 0; i < vertices.Count; i++) {
+                for (int i = 0; i < vertices.Count; i++)
+                {
                     pts[i] = vertices[i];
                 }
             }
             pc.points = pts;
+#endif
         }
         /// <summary>
         /// Generates and adds a MeshCollider component based on the mesh's current shape
         /// </summary>
-        public void GenerateMeshCollider() {
-            if (this.gameObject.GetComponent<Collider2D>() != null) {
+        public void GenerateMeshCollider()
+        {
+#if UNITY_EDITOR
+            if (this.gameObject.GetComponent<Collider2D>() != null)
+            {
                 Debug.Log("Cannot add Mesh Collider because gameobject already contains a Collider2D");
                 return;
             }
             MeshCollider mc = this.gameObject.AddComponent<MeshCollider>();
             Undo.RegisterCreatedObjectUndo(mc, "Undo add MeshCollider");
             mc.sharedMesh = meshFilter.sharedMesh;
+#endif
         }
     }
 }

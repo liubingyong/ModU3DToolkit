@@ -112,7 +112,7 @@ namespace ModU3DToolkit.Pool
                 original.InstanceID = nextInstanceID++;
                 original.IsUsed = false;
                 original.OnInstantiation();
-                original.gameObject.SetActiveRecursively(false);
+                original.gameObject.SetActive(false);
             }
         }
 
@@ -132,7 +132,7 @@ namespace ModU3DToolkit.Pool
             instance.InstanceID = nextInstanceID++;
             instance.IsUsed = false;
             instance.OnInstantiation();
-            instance.gameObject.SetActiveRecursively(false);
+            instance.gameObject.SetActive(false);
         }
 
         private void Grow()
@@ -153,7 +153,7 @@ namespace ModU3DToolkit.Pool
             freeList.Remove(instance);
             usedList.Add(instance);
 
-            instance.gameObject.SetActiveRecursively(true);
+            instance.gameObject.SetActive(false);
             instance.OnRequested();
             instance.IsUsed = true;
 
@@ -164,7 +164,7 @@ namespace ModU3DToolkit.Pool
         {
             instance.IsUsed = false;
             instance.OnFreed();
-            instance.gameObject.SetActiveRecursively(false);
+            instance.gameObject.SetActive(false);
 
             usedList.Remove(instance);
             freeList.Add(instance);

@@ -136,7 +136,6 @@ namespace ModU3DToolkit.Pool
                 poolsByID[originalID].Destroy();
                 freeIDs.Add(originalID);
 
-                string originalName = pool.Original.name;
                 idsByName.Remove(pool.Original.name);
 
                 // unload pool.Original if prefab & resource, destroy if not prefab?
