@@ -86,7 +86,7 @@ public class GhostTrail : MonoBehaviour
             MeshFilter meshFilter = go.AddComponent<MeshFilter>();
             meshFilter.mesh = mesh;
 
-            //MeshRenderer meshRenderer = go.AddComponent<MeshRenderer> ();  
+            go.AddComponent<MeshRenderer>();
 
             trails.Add(new GhostTrailSettings(go, ghostMaterial, newlifeTime, newfadeTime));
         }
@@ -103,7 +103,7 @@ public class GhostTrail : MonoBehaviour
             MeshFilter meshFilter = go.AddComponent<MeshFilter>();
             meshFilter.mesh = meshRenderers[i].GetComponent<MeshFilter>().mesh;
 
-            //MeshRenderer meshRenderer = go.AddComponent<MeshRenderer> ();
+            go.AddComponent<MeshRenderer>();
 
             trails.Add(new GhostTrailSettings(go, ghostMaterial, newlifeTime, newfadeTime));
         }
