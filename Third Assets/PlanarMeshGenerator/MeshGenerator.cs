@@ -1,10 +1,8 @@
 ﻿using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
-
 #if UNITY_EDITOR
 using UnityEditor;
-#endif
 
 /*/////////////////////////////////////////100-chars////////////////////////////////////////////////
 * A 2D mesh generator that implemented using a clipping algorithm with concave abilities.
@@ -86,14 +84,12 @@ namespace PlanarMeshGenerator
         //***************************MESH BUILDING LOGIC********************************//
         public void UserRebuildMesh()
         {
-#if UNITY_EDITOR
             if (Setup()) return;
             Object[] objs = new Object[2];
             objs[0] = this;
             objs[1] = meshFilter.sharedMesh;
             Undo.RegisterCompleteObjectUndo(this.meshFilter, "Rebuilding mesh"); //TODO: REGISTER REBUILD TO UNDO
             BuildMesh();
-#endif
         }
 
         public void BuildMesh()
@@ -337,7 +333,6 @@ namespace PlanarMeshGenerator
         /// </summary>
         public void AddEdgeCollider(int startInd, int endInd)
         {
-#if UNITY_EDITOR
             if (this.gameObject.GetComponent<Collider>() != null)
             {
                 Debug.Log("Cannot add EdgeCollider because gameobject already contains a Collider(3D)");
@@ -369,14 +364,12 @@ namespace PlanarMeshGenerator
                 }
             }
             pc.points = pts;
-#endif
         }
         /// <summary>
         /// Generates and adds a PolygonCollider to the gameobject based on the mesh's current shape
         /// </summary>
         public void AddPolygonCollider()
         {
-#if UNITY_EDITOR
             if (this.gameObject.GetComponent<Collider>() != null)
             {
                 Debug.Log("Cannot add PolygonCollider because gameobject already contains a Collider(3D)");
@@ -408,14 +401,12 @@ namespace PlanarMeshGenerator
                 }
             }
             pc.points = pts;
-#endif
         }
         /// <summary>
         /// Generates and adds a MeshCollider component based on the mesh's current shape
         /// </summary>
         public void GenerateMeshCollider()
         {
-#if UNITY_EDITOR
             if (this.gameObject.GetComponent<Collider2D>() != null)
             {
                 Debug.Log("Cannot add Mesh Collider because gameobject already contains a Collider2D");
@@ -424,7 +415,7 @@ namespace PlanarMeshGenerator
             MeshCollider mc = this.gameObject.AddComponent<MeshCollider>();
             Undo.RegisterCreatedObjectUndo(mc, "Undo add MeshCollider");
             mc.sharedMesh = meshFilter.sharedMesh;
-#endif
         }
     }
 }
+#endif
