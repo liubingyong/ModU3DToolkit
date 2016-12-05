@@ -23,3 +23,9 @@ public class UnityEventInt : UnityEvent<int>
 {
 
 }
+
+[System.Serializable]
+public class UnityEventFloat : UnityEvent<float>
+{
+
+}
