@@ -26,7 +26,7 @@ public abstract class BasePopup : MonoBehaviour
 
     protected IEnumerator PopPopup()
     {
-        this.BroadcastMessage("StartExitTweens");
+        this.BroadcastMessage("StartExitTweens", SendMessageOptions.DontRequireReceiver);
 
         while (UIEnterExitTweens.activeTweensCounter > 0)
         {
