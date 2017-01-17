@@ -2,7 +2,7 @@
 using System.Collections;
 
 [RequireComponent(typeof(UIPage))]
-public abstract class BasePage : MonoBehaviour {
+public abstract class BasePage : MonoBehaviourEx {
 	protected UIPage currentUIPage;
 
 	public virtual void Awake() {

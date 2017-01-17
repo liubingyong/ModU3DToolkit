@@ -1,7 +1,7 @@
 ﻿using System;
 using UnityEngine;
 
-public class Utils
+public class UtilsCommon
 {
     //
     // Static Methods
