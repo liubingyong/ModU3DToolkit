@@ -45,7 +45,6 @@ public class TimerManager : Manager<TimerManager>
 
     public void SetTimer(string id, TimeSpan duration, bool resetTime)
     {
-        Debug.Log(id);
         DateTime expDate;
         bool isValid;
         DateTimeManager.Instance.GetDate(out expDate, out isValid);
@@ -172,7 +171,7 @@ public class TimerManager : Manager<TimerManager>
                 int lastIndex = timers.Length - 1;
                 timers[i] = timers[lastIndex];
                 Array.Resize<Timer>(ref timers, lastIndex);
-                Debug.Log(timer.id);
+
                 onTimerExpired.Invoke(timer);
             }
             else

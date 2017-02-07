@@ -6,7 +6,6 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using ModU3DToolkit.Core;
-using ModU3DToolkit.Pool;
 using UnityEngine.SceneManagement;
 
 [AddComponentMenu("UI/UIManager")]
@@ -43,12 +42,6 @@ public class UIManager : Manager<UIManager>
     protected IntrusiveList<UIPopup> popups = new IntrusiveList<UIPopup>();
 
     protected Stack<UIPopup> popupsStack = new Stack<UIPopup>();
-    /*
-        protected uint nextFlyerID = 0;
-        protected Dictionary<string, uint> flyerIDs = new Dictionary<string,uint>();
-        protected Dictionary<uint, Pool<UIFlyer>> flyerPools = new Dictionary<uint,Pool<UIFlyer>>();
-    */
-    protected PoolCollection<UIFlyer> flyers;
 
     protected TimeSource uiTimeSource = null;
     protected UIPage prevPage = null;
@@ -387,158 +380,6 @@ public class UIManager : Manager<UIManager>
     }
     #endregion
 
-    #region Flyers
-    public void RegisterFlyerPrefab(UIFlyer flyerPrefab, int poolSize)
-    {/*
-#if UNITY_EDITOR
-        if (PrefabUtility.GetPrefabType(flyerPrefab) != PrefabType.Prefab)
-        {
-            Debug.LogError("Flyer \"" + flyerPrefab.name + "\" is not a Prefab!", flyerPrefab);
-            return;
-        }
-
-        if (flyerIDs.ContainsKey(flyerPrefab.name))
-        {
-            Debug.LogError("Flyer \"" + flyerPrefab.name + "\" already exist!", flyerPrefab);
-            return;
-        }
-#endif
-        flyerIDs.Add(flyerPrefab.name, nextFlyerID);
-        flyerPools.Add(nextFlyerID, new Pool<UIFlyer>(flyerPrefab, true, poolSize));
-
-        ++nextFlyerID;*/
-        flyers.RegisterPrefab(flyerPrefab, poolSize);
-    }
-
-    public void RegisterFlyerPrefab(UIFlyer flyerPrefab)
-    {
-        //this.RegisterFlyerPrefab(flyerPrefab, 0);
-        flyers.RegisterPrefab(flyerPrefab);
-    }
-
-    public void RegisterFlyer(UIFlyer flyer, int poolSize)
-    {/*
-#if UNITY_EDITOR
-        if (PrefabType.Prefab == PrefabUtility.GetPrefabType(flyer))
-        {
-            Debug.LogError("Flyer \"" + flyer.name + "\" is not an instance!", flyer);
-            return;
-        }
-
-        if (flyerIDs.ContainsKey(flyer.name))
-        {
-            Debug.LogError("Flyer \"" + flyer.name + "\" already exist!", flyer);
-            return;
-        }
-#endif
-        flyerIDs.Add(flyer.name, nextFlyerID);
-        flyerPools.Add(nextFlyerID, new Pool<UIFlyer>(flyer, false, poolSize));
-
-        ++nextFlyerID;*/
-        flyers.RegisterInstance(flyer, poolSize);
-    }
-
-    public void RegisterFlyer(UIFlyer flyer)
-    {
-        //this.RegisterFlyer(flyer, 0);
-        flyers.RegisterInstance(flyer);
-    }
-
-    public uint GetFlyerID(string flyerName)
-    {/*
-        uint hash;
-        if (flyerIDs.TryGetValue(flyerName, out hash))
-            return hash;
-        return uint.MaxValue;*/
-        return flyers.GetOriginalID(flyerName);
-    }
-
-    public uint GetFlyerID(UIFlyer flyer)
-    {
-        //return this.GetFlyerID(flyer.name);
-        return flyers.GetOriginalID(flyer);
-    }
-
-    public IntrusiveList<UIFlyer> GetActiveFlyers(uint flyerID)
-    {/*
-#if UNITY_EDITOR
-        if (!flyerPools.ContainsKey(flyerID))
-        {
-            Debug.LogError("Flyer ID" + flyerID + " doesn't exist!");
-            return null;
-        }
-#endif
-        return flyerPools[flyerID].UsedList;*/
-        return flyers.GetActiveList(flyerID);
-    }
-
-    public IntrusiveList<UIFlyer> GetActiveFlyers(string flyerName)
-    {
-        //return this.GetActiveFlyers(this.GetFlyerID(flyerName));
-        return flyers.GetActiveList(flyerName);
-    }
-
-    public IntrusiveList<UIFlyer> GetActiveFlyers(UIFlyer flyer)
-    {
-        //return this.GetActiveFlyers(this.GetFlyerID(flyer));
-        return flyers.GetActiveList(flyer);
-    }
-
-    public UIFlyer PlayFlyer(uint flyerID, Vector3 position, Quaternion rotation)
-    {/*
-#if UNITY_EDITOR
-        if (!flyerPools.ContainsKey(flyerID))
-        {
-            Debug.LogError("Flyer ID" + flyerID + " doesn't exist!");
-            return null;
-        }
-#endif
-        UIFlyer flyer = flyerPools[flyerID].Get();
-        flyer.transform.position = transform.TransformPoint(position);
-        flyer.transform.rotation = transform.rotation * rotation;
-        flyer.Play();
-
-        return flyer;*/
-        UIFlyer flyer = flyers.Instantiate(flyerID);
-        flyer.transform.position = transform.TransformPoint(position);
-        flyer.transform.rotation = transform.rotation * rotation;
-        flyer.Play();
-        return flyer;
-    }
-
-    public UIFlyer PlayFlyer(string flyerName, Vector3 position, Quaternion rotation)
-    {
-        return this.PlayFlyer(this.GetFlyerID(flyerName), position, rotation);
-    }
-
-    public UIFlyer PlayFlyer(UIFlyer flyer, Vector3 position, Quaternion rotation)
-    {
-        return this.PlayFlyer(this.GetFlyerID(flyer), position, rotation);
-    }
-
-    protected void UpdateFlyers()
-    {
-#if SBS_PROFILER
-        Profiler.BeginSample("UpdateFlyers");
-#endif
-        /*foreach (KeyValuePair<uint, Pool<UIFlyer>> item in flyerPools)
-        {
-            UIFlyer node = item.Value.UsedList.Head;
-            while (node != null)
-            {
-                node.UpdateFlyer();
-
-                node = node.next;
-            }
-        }*/
-        foreach (UIFlyer flyer in flyers)
-            flyer.UpdateFlyer();
-#if SBS_PROFILER
-        Profiler.EndSample();
-#endif
-    }
-    #endregion
-
     #region TimeSource
     public TimeSource UITimeSource
     {
@@ -565,8 +406,6 @@ public class UIManager : Manager<UIManager>
         base.Awake();
 
         SceneManager.sceneLoaded += SceneLoaded;
-
-        flyers.Initialize();
 
         if (dontDestroyOnLoad)
             GameObject.DontDestroyOnLoad(gameObject);
