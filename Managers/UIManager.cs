@@ -393,12 +393,12 @@ public class UIManager : Manager<UIManager>
     #region Unity callbacks
     void OnEnable()
     {
-        
+
     }
 
     void OnDisable()
     {
-        
+
     }
 
     new void Awake()

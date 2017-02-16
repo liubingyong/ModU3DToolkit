@@ -19,10 +19,9 @@ public class TabItem
 
 public class TabControl : UIBehaviour
 {
-    public int defaultTabIndex = 0;
+    //public int defaultTabIndex = 0;
 
-    [SerializeField]
-    private List<TabItem> entries = null;
+    public List<TabItem> entries = null;
 
     protected override void Start()
     {
@@ -33,10 +32,10 @@ public class TabControl : UIBehaviour
             AddButtonListener(entry);
         }
 
-        if (entries.Count > defaultTabIndex)
-        {
-            SelectTab(entries[defaultTabIndex]);
-        }
+        //if (entries.Count > defaultTabIndex)
+        //{
+        //    SelectTab(entries[defaultTabIndex]);
+        //}
     }
 
     public void AddEntry(TabItem entry)

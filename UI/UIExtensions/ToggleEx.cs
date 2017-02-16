@@ -21,6 +21,8 @@ public class ToggleEx : Toggle
     {
         base.OnDeselect(eventData);
         onDeselect.Invoke(this);
+
+        isOn = false;
     }
 
     public override void OnSubmit(BaseEventData eventData)
