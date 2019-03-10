@@ -22,10 +22,7 @@ namespace ModU3DToolkit.Core
 
             if (null == forcedDataPath)
             {
-                if (Application.isWebPlayer)
-                    dataPath = Application.dataPath;
-                else
-                    dataPath = "file://" + Application.dataPath.Substring(0, Application.dataPath.LastIndexOf('/'));
+                dataPath = "file://" + Application.dataPath.Substring(0, Application.dataPath.LastIndexOf('/'));
             }
             else
                 dataPath = forcedDataPath;

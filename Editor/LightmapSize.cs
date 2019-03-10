@@ -6,7 +6,7 @@ public class AtlasSize_512 : EditorWindow
     static void Init()
     {
         LightmapEditorSettings.maxAtlasHeight = 512;
-        LightmapEditorSettings.maxAtlasWidth = 512;
+        LightmapEditorSettings.maxAtlasSize = 512;
     }
 }
 
@@ -16,7 +16,7 @@ public class AtlasSize_1K : EditorWindow
     static void Init()
     {
         LightmapEditorSettings.maxAtlasHeight = 1024;
-        LightmapEditorSettings.maxAtlasWidth = 1024;
+        LightmapEditorSettings.maxAtlasSize = 1024;
     }
 }
 
@@ -26,7 +26,7 @@ public class AtlasSize_2K : EditorWindow
     static void Init()
     {
         LightmapEditorSettings.maxAtlasHeight = 2048;
-        LightmapEditorSettings.maxAtlasWidth = 2048;
+        LightmapEditorSettings.maxAtlasSize = 2048;
     }
 }
 
@@ -36,6 +36,6 @@ public class AtlasSize_4K : EditorWindow
     static void Init()
     {
         LightmapEditorSettings.maxAtlasHeight = 4096;
-        LightmapEditorSettings.maxAtlasWidth = 4096;
+        LightmapEditorSettings.maxAtlasSize = 4096;
     }
 }
